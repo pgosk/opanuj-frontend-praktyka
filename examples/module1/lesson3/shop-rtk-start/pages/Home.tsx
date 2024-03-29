@@ -1,9 +1,17 @@
-import { useContext } from 'react';
+import { FetchDataState } from '../components/FetchDataState';
 import Product from '../components/Product';
-import { ProductContext } from '../contexts/ProductContext';
+import { useFetchProductsQuery } from '../services/products';
 
 const Home = () => {
-  const { products } = useContext(ProductContext);
+  const { data: products, isLoading, isError } = useFetchProductsQuery();
+
+  if (isLoading) {
+    return <FetchDataState message="Loading..." />;
+  }
+
+  if (isError || !products) {
+    return <FetchDataState message="Something went wrong..." />;
+  }
 
   return (
     <div>

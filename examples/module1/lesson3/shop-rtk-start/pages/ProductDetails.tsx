@@ -1,23 +1,28 @@
-import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { CartContext } from '../contexts/CartContext';
-import { ProductContext } from '../contexts/ProductContext';
+import { useAppDispatch } from '../hooks/rtk';
+import { addToCart } from '../state/cartSlice';
+import { useFetchProductsQuery } from '../services/products';
+import { FetchDataState } from '../components/FetchDataState';
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const { addToCart } = useContext(CartContext);
-  const { products } = useContext(ProductContext);
+  const { data: products, isLoading, isError } = useFetchProductsQuery();
+  const dispatch = useAppDispatch();
+
+  if (isLoading) {
+    return <FetchDataState message="Loading..." />;
+  }
+
+  if (isError || !products) {
+    return <FetchDataState message="Something went wrong..." />;
+  }
 
   const product = products.find((item) => {
     return item.id === parseInt(id!);
   });
 
   if (!product) {
-    return (
-      <section className="h-screen flex justify-center items-center">
-        Loading...
-      </section>
-    );
+    return <FetchDataState message="Cannot find product..." />;
   }
 
   const { title, price, description, image } = product;
@@ -37,7 +42,7 @@ const ProductDetails = () => {
             </div>
             <p className="mb-8">{description}</p>
             <button
-              onClick={() => addToCart(product)}
+              onClick={() => dispatch(addToCart(product))}
               className="bg-green-600 py-4 px-8 text-white"
             >
               Add to cart
